@@ -1,0 +1,30 @@
+# this is a deployment for the tracegen utility that is delivered with Jaeger
+# use with care, as it generates quite some load in the current setting
+# this deployment was especially designed to test the autoscaling capabilities
+# and requires an instance named 'simple-prod'.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tracegen
+  annotations:
+    "sidecar.jaegertracing.io/inject": "simple-prod"
+spec:
+  replicas: 10
+  selector:
+    matchLabels:
+      app: tracegen
+  template:
+    metadata:
+      labels:
+        app: tracegen
+    spec:
+      containers:
+      - name: tracegen
+        image: jaegertracing/jaeger-tracegen:1.46.0
+        args:
+        - -duration=30m
+        - -workers=10
+        ports:
+        - containerPort: 6831
+          name: jg-compact-trft
+          protocol: UDP

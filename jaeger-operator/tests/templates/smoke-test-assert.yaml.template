@@ -1,0 +1,7 @@
+# Assert the spans can be queried
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: check-span
+status:
+  succeeded: 1

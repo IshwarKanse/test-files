@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vertx-create-span-sidecar
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: vertx-create-span-sidecar
+  template:
+    metadata:
+      labels:
+        app: vertx-create-span-sidecar
+    spec:
+      containers:
+        - name: vertx-create-span-sidecar
+          image: "{{ .Env.VERTX_IMG }}"
+          ports:
+            - containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: "/"
+              port: 8080
+            initialDelaySeconds: 7
+            periodSeconds: 1
+          livenessProbe:
+            httpGet:
+              path: "/"
+              port: 8080
+            initialDelaySeconds: 7
+            periodSeconds: 1

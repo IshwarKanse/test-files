@@ -1,0 +1,5 @@
+# Configure the SA to access programatically to the Jaeger query
+apiVersion: kuttl.dev/v1beta1
+kind: TestStep
+commands:
+  - script: "SERVICE_ACCOUNT_NAME={{ .Env.SERVICE_ACCOUNT_NAME }} {{ .Env.GET_TOKEN_PROGRAM }} $NAMESPACE {{ .Env.JAEGER_NAME }} /dev/null"

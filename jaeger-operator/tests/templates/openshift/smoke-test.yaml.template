@@ -1,0 +1,9 @@
+# The ClusterRoleBinding needs the namespace in the YAML file. The smoke test
+# YAML file needs the secret name
+# Those files are generated while running the tests
+apiVersion: kuttl.dev/v1beta1
+kind: TestStep
+commands:
+  - script: "SERVICE_ACCOUNT_NAME={{ .Env.SERVICE_ACCOUNT_NAME }} {{ .Env.GET_TOKEN_PROGRAM }} $NAMESPACE {{ .Env.JAEGER_NAME }} /dev/null"
+  - script: "ASSERT_IMG={{ .Env.ASSERT_IMG }} JAEGER_COLLECTOR_ENDPOINT={{ .Env.JAEGER_COLLECTOR_ENDPOINT }} JAEGER_QUERY_ENDPOINT={{ .Env.JAEGER_QUERY_ENDPOINT }} MOUNT_SECRET={{ .Env.SERVICE_ACCOUNT_NAME }} {{ .Env.GOMPLATE }} -f {{ .Env.TEMPLATES_DIR }}/smoke-test.yaml.template -o smoke-test-job.yaml"
+  - script: "kubectl apply -f smoke-test-job.yaml -n $NAMESPACE"
