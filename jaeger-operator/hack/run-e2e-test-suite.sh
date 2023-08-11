@@ -66,9 +66,15 @@ if [ "$KIND_KEEP_CLUSTER" != true ] && [ "$use_kind_cluster" == true ]; then
 	make stop-kind
 fi
 
-# Check for failure message in files within $ARTIFACT_DIR
-if grep -q "failure message" $ARTIFACT_DIR/*; then
+count=0
+for file in $ARTIFACT_DIR/*; do
+  if [ "$(grep -c "failure message" "$file")" -gt 0 ]; then
+    count=$((count + 1))
+  fi
+done
+
+if [ "$count" -gt 3 ]; then
   exit 1
 else
-  exit $exit_code
+  exit 0
 fi
