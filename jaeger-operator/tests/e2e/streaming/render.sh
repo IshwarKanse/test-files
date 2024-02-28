@@ -33,3 +33,41 @@ else
     render_install_elasticsearch "upstream" "03"
     render_smoke_test "tls-streaming" "$is_secured" "05"
 fi
+
+
+###############################################################################
+# TEST NAME: streaming-with-autoprovisioning-autoscale
+###############################################################################
+if [ $SKIP_KAFKA = true ]; then
+    skip_test "streaming-with-autoprovisioning-autoscale" "SKIP_KAFKA is true"
+else
+    start_test "streaming-with-autoprovisioning-autoscale"
+    if [ $KAFKA_OLM = true ]; then
+        # Remove the installation of the operator
+        rm ./00-install.yaml ./00-assert.yaml
+    fi
+
+    render_install_elasticsearch "upstream" "01"
+
+    jaeger_name="auto-provisioned"
+    # Change the resource limits for the autoprovisioned deployment
+    $YQ e -i '.spec.ingester.resources.requests.memory="20Mi"' ./02-install.yaml
+    $YQ e -i '.spec.ingester.resources.requests.memory="500m"' ./02-install.yaml
+
+    # Enable autoscale
+    $YQ e -i '.spec.ingester.autoscale=true' ./02-install.yaml
+    $YQ e -i '.spec.ingester.minReplicas=1' ./02-install.yaml
+    $YQ e -i '.spec.ingester.maxReplicas=2' ./02-install.yaml
+
+    # Assert the autoprovisioned Kafka deployment
+    render_assert_kafka "true" "$jaeger_name" "03"
+
+    if version_lt $KUBE_VERSION "1.23"; then
+        rm ./07-assert.yaml
+    else
+        rm ./08-assert.yaml
+    fi
+fi
+
+skip_test "streaming-with-tls" "This test is flaky in Prow CI"
+skip_test "streaming-simple" "This test is flaky in Prow CI"

@@ -50,6 +50,15 @@ render_smoke_test_example "$example_name" "02"
 
 
 ###############################################################################
+# TEST NAME: examples-collector-with-priority-class
+###############################################################################
+start_test "examples-collector-with-priority-class"
+example_name="collector-with-priority-class"
+render_install_example "$example_name" "00"
+render_smoke_test_example "$example_name" "01"
+
+
+###############################################################################
 # TEST NAME: examples-service-types
 ###############################################################################
 start_test "examples-service-types"
@@ -135,6 +144,18 @@ render_install_cassandra "00"
 render_install_example "$example_name" "01"
 render_smoke_test_example "$example_name" "02"
 
+###############################################################################
+# TEST NAME: examples-agent-as-daemonset
+###############################################################################
+start_test "examples-agent-as-daemonset"
+if [ $IS_OPENSHIFT = true ]; then
+    prepare_daemonset "00"
+    $GOMPLATE -f $EXAMPLES_DIR/openshift/agent-as-daemonset.yaml -o 02-install.yaml
+else
+    rm ./01-add-policy.yaml # This is just for OpenShift
+    render_install_example "agent-as-daemonset" "02"
+fi
+
 
 ###############################################################################
 # OpenShift examples ##########################################################
@@ -168,3 +189,7 @@ if [ $IS_OPENSHIFT = true ]; then
 else
     skip_test "examples-openshift-with-htpasswd" "This test is only supported in OpenShift"
 fi
+
+skip_test "examples-agent-as-daemonset" "This test is flaky in Prow CI"
+skip_test "examples-with-badger-and-volume" "This test is flaky in Prow CI"
+skip_test "examples-collector-with-priority-class" "This test is flaky in Prow CI"
