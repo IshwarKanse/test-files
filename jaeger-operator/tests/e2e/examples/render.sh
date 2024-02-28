@@ -3,13 +3,15 @@
 source $(dirname "$0")/../render-utils.sh
 
 ###############################################################################
-# TEST NAME: examples-agent-as-daemonset
+# TEST NAME: examples-agent-with-priority-class
 ###############################################################################
-start_test "examples-agent-as-daemonset"
-example_name="agent-as-daemonset"
-
+start_test "examples-agent-with-priority-class"
+example_name="agent-with-priority-class"
 prepare_daemonset "00"
-render_install_example "$example_name" "01"
+if [ $IS_OPENSHIFT != true ]; then
+    rm ./01-add-policy.yaml # This is just for OpenShift
+fi
+render_install_example "$example_name" "02"
 render_smoke_test_example "$example_name" "02"
 
 
@@ -28,6 +30,7 @@ else
     sed -i "s~my-jaeger-query:16686~my-jaeger-query:16686/jaeger~gi" ./01-smoke-test.yaml
 fi
 
+
 ###############################################################################
 # TEST NAME: examples-business-application-injected-sidecar
 ###############################################################################
@@ -44,15 +47,6 @@ $YQ e -i '.spec.template.spec.containers[0].livenessProbe.successThreshold=1' ./
 $YQ e -i '.spec.template.spec.containers[0].livenessProbe.timeoutSeconds=1' ./00-install.yaml
 render_install_example "$example_name" "01"
 render_smoke_test_example "$example_name" "02"
-
-
-###############################################################################
-# TEST NAME: examples-collector-with-priority-class
-###############################################################################
-start_test "examples-collector-with-priority-class"
-example_name="collector-with-priority-class"
-render_install_example "$example_name" "00"
-render_smoke_test_example "$example_name" "01"
 
 
 ###############################################################################
@@ -112,6 +106,16 @@ example_name="with-badger"
 render_install_example "$example_name" "00"
 render_smoke_test_example "$example_name" "01"
 
+
+###############################################################################
+# TEST NAME: examples-with-badger-and-volume
+###############################################################################
+start_test "examples-with-badger-and-volume"
+example_name="with-badger-and-volume"
+render_install_example "$example_name" "00"
+render_smoke_test_example "$example_name" "01"
+
+
 ###############################################################################
 # TEST NAME: examples-with-cassandra
 ###############################################################################
@@ -135,7 +139,6 @@ render_smoke_test_example "$example_name" "02"
 ###############################################################################
 # OpenShift examples ##########################################################
 ###############################################################################
-
 if [ $IS_OPENSHIFT = true ]; then
     start_test "examples-openshift-with-htpasswd"
     export JAEGER_NAME="with-htpasswd"
